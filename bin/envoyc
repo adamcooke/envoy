@@ -1,0 +1,11 @@
+#! /usr/bin/env ruby
+# -*- mode: ruby -*-
+
+begin
+  require 'envoy/client/command'
+rescue LoadError
+  path = File.expand_path '../../lib', __FILE__
+  $:.unshift path if File.directory?(path)
+  require 'envoy/client/command'
+end
+
