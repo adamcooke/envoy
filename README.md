@@ -2,6 +2,8 @@
 
 A clone of proxylocal. Both client and server are included.
 
+    gem install envoy-proxy
+
 ## The client
 
     envoyc [--host HOST] [--tls] [--server SERVER] [[ADDRESS:]PORT] 
