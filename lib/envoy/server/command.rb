@@ -2,7 +2,7 @@ require 'envoy/server/trunk'
 require 'envoy/server/web'
 require 'optparse'
 
-listen = []
+listen = ["0.0.0.0", "8080"]
 
 OptionParser.new do |op|
   op.banner = "Usage: #{$0} [options] ZONE"
@@ -14,7 +14,7 @@ OptionParser.new do |op|
   op.abort "zone required" unless ARGV[0]
 end
 
-$zone = ARGV[0]
+$zone = ARGV[0].gsub(/^\.+/, '')
 
 unless EM.reactor_running?
   EM.run do
@@ -22,4 +22,3 @@ unless EM.reactor_running?
     EM.start_server *listen, Envoy::Server::Web
   end
 end
-

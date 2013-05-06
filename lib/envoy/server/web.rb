@@ -18,10 +18,10 @@ module Envoy
         @header << line + "\r\n"
         if line =~ /^Host: ([^:]*)/
           host = $1
-          raise "Request is not in #{@zone}" unless host.end_with?($zone)
+          raise "Request is not in #{$zone}" unless host.end_with?($zone)
           host = host[0...-$zone.length]
           host = host.split(".").last
-          trunk = Trunk.trunks[host].sample || raise("No trunk for #{host}#{$zone}")
+          trunk = Trunk.trunks[host].sample || raise("No trunk for #{host}.#{$zone}")
           @channel = Channel.new(trunk, self, @header)
           set_text_mode
         elsif @header.size > 4096
