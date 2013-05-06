@@ -4,13 +4,13 @@ require 'optparse'
 require 'ostruct'
 
 options = {
-  server_host: 'proxylocal.com',
+  server_host: 'p45.eu',
   server_port: "8282",
   local_host: '127.0.0.1',
   local_port: "80",
   tls: false,
   verbose: false,
-  version: "0.3.1"
+  version: Envoy::VERSION
 }
 
 OptionParser.new do |op|
