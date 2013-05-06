@@ -1,4 +1,5 @@
 require 'envoy/client/trunk'
+require 'envoy/version'
 
 require 'optparse'
 require 'ostruct'
