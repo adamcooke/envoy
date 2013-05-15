@@ -19,7 +19,7 @@ module Envoy
         @first_line ||= line
         if line == ""
           trunk = Trunk.trunks[@host].sample || raise("No trunk for #{@host}.#{$zone}")
-          @header << "Connection: #{@connection}\r\n"
+          @header << "Connection: #{@connection}\r\n\r\n"
           @channel = Channel.new(trunk, self, @header)
           @channel.message "%s %s" % [Socket.unpack_sockaddr_in(get_peername)[1], @first_line]
           set_text_mode
@@ -28,9 +28,9 @@ module Envoy
         elsif line =~ /^keep-alive:/i
         elsif line =~ /^host:\s*([^:]*)/i
           @host = $1
+          raise "Request for #{@host} is not in #{$zone}" unless @host.end_with?($zone)
           @host = @host[0...-$zone.length]
           @host = @host.split(".").last
-          raise "Request is not in #{$zone}" unless @host.end_with?($zone)
           @header << line + "\r\n"
         elsif @header.size > 4096
           raise "Header's too long for my liking"
