@@ -51,10 +51,10 @@ module Envoy
       end
       
       def unbind
-        if @options[:reconnect]
-          STDERR.puts "No connection. Reconnecting in #{@options[:reconnect]}s."
-          EM.add_timer @options[:reconnect] do
-            @options[:reconnect] *= 2
+        if r = @options[:reconnect]
+          STDERR.puts "Lost connection. Reconnecting in #{r[0]}s."
+          EM.add_timer r[0] do
+            @options[:reconnect] = [r[1], r[0] + r[1]]
             Trunk.start @options
           end
         else
@@ -69,7 +69,7 @@ module Envoy
       
       def ssl_handshake_completed
         options[:did_connect] = true
-        options[:reconnect] = 1 if options[:hosts]
+        options[:reconnect] = [0, 1] if options[:hosts]
         o = options.dup
         o.delete(:local_host)
         send_object :options, o
