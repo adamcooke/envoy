@@ -8,6 +8,7 @@ module Envoy
       
       def post_init
         @header = ""
+        @connection = "close"
       end
       
       def unbind
@@ -15,17 +16,26 @@ module Envoy
       end
       
       def receive_line line
-        @header << line + "\r\n"
-        if line =~ /^Host: ([^:]*)/
-          host = $1
-          raise "Request is not in #{$zone}" unless host.end_with?($zone)
-          host = host[0...-$zone.length]
-          host = host.split(".").last
-          trunk = Trunk.trunks[host].sample || raise("No trunk for #{host}.#{$zone}")
+        @first_line ||= line
+        if line == ""
+          trunk = Trunk.trunks[@host].sample || raise("No trunk for #{@host}.#{$zone}")
+          @header << "Connection: #{@connection}\r\n"
           @channel = Channel.new(trunk, self, @header)
+          @channel.message "%s %s" % [Socket.unpack_sockaddr_in(get_peername)[1], @first_line]
           set_text_mode
+        elsif line =~ /^connection:\s*upgrade$/i
+          @connection = "upgrade"
+        elsif line =~ /^keep-alive:/i
+        elsif line =~ /^host:\s*([^:]*)/i
+          @host = $1
+          @host = @host[0...-$zone.length]
+          @host = @host.split(".").last
+          raise "Request is not in #{$zone}" unless @host.end_with?($zone)
+          @header << line + "\r\n"
         elsif @header.size > 4096
           raise "Header's too long for my liking"
+        else
+          @header << line + "\r\n"
         end
       rescue RuntimeError => e
         send_data "HTTP/1.0 500 Internal Server Error\r\n"

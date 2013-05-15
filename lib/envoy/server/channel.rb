@@ -18,6 +18,10 @@ module Envoy
         @trunk.send_object :stream, id, data
       end
       
+      def message data
+        @trunk.send_object :message, data
+      end
+      
       def id
         @id ||= SecureRandom.hex(4)
       end
@@ -26,4 +30,3 @@ module Envoy
     
   end
 end
-
