@@ -10,6 +10,10 @@ OptionParser.new do |op|
     port, host = v.split(":").reverse
     listen = [host || "0.0.0", port]
   end
+  op.on "--version" do
+    puts Envoy::VERSION
+    exit
+  end
   op.parse!
   op.abort "zone required" unless ARGV[0]
 end

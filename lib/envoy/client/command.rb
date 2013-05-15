@@ -35,6 +35,10 @@ OptionParser.new do |op|
     puts op
     exit
   end
+  op.on "--version" do
+    puts Envoy::VERSION
+    exit
+  end
   op.parse!
   case ARGV[0]
   when /^(\d+)$/
