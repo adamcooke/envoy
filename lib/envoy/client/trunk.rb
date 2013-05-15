@@ -9,6 +9,10 @@ module Envoy
       
       attr_reader :options
       
+      def self.start options
+        EM.connect options[:server_host], options[:server_port].to_i, Envoy::Client::Trunk, options
+      end
+      
       def initialize options
         @options = options
       end
@@ -47,10 +51,25 @@ module Envoy
       end
       
       def unbind
-        EM.stop_event_loop
+        if @options[:reconnect]
+          STDERR.puts "No connection. Reconnecting in #{@options[:reconnect]}s."
+          EM.add_timer @options[:reconnect] do
+            @options[:reconnect] *= 2
+            Trunk.start @options
+          end
+        else
+          if options[:did_connect]
+            STDERR.puts "Connection lost. Not point reconnecting because the host is randomly generated."
+          else
+            STDERR.puts "Couldn't connect. Abandoning ship."
+          end
+          receive_halt
+        end
       end
       
       def ssl_handshake_completed
+        options[:did_connect] = true
+        options[:reconnect] = 1 if options[:hosts]
         o = options.dup
         o.delete(:local_host)
         send_object :options, o
@@ -64,4 +83,3 @@ module Envoy
   
   end
 end
-

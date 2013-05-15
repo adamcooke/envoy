@@ -49,7 +49,6 @@ end
 
 unless EM.reactor_running?
   EM.run do
-    EM.connect options[:server_host], options[:server_port].to_i, Envoy::Client::Trunk, options
+    Envoy::Client::Trunk.start options
   end
 end
-
