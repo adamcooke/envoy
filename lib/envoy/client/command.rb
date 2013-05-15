@@ -20,6 +20,9 @@ OptionParser.new do |op|
     options[:hosts] ||= []
     options[:hosts] << v
   end
+  op.on "-k", "--key KEY" do |v|
+    options[:key] = v
+  end
   op.on "-t", "--[no-]tls", "Encrypt communications with the envoy server" do |v|
     options[:tls] = v
   end

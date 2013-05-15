@@ -48,11 +48,14 @@ module Envoy
       end
       
       def receive_halt
+        @halting = true
         EventMachine.stop_event_loop
       end
       
       def unbind
-        if r = @options[:reconnect]
+        if @halting
+          STDERR.puts "Server shut us down."
+        elsif !@halting && r = @options[:reconnect]
           STDERR.write "Lost connection. Retrying... #{r[0]}\r"
           EM.add_timer 0.5 do
             @options[:reconnect] = r.rotate
@@ -64,16 +67,14 @@ module Envoy
           else
             STDERR.puts "Couldn't connect. Abandoning ship."
           end
-          receive_halt
+          EventMachine.stop_event_loop
         end
       end
       
       def ssl_handshake_completed
         options[:did_connect] = true
         options[:reconnect] = %w"- \\ | /" if options[:hosts]
-        o = options.dup
-        o.delete(:local_host)
-        send_object :options, o
+       send_object :options, options
       end
       
       def post_init

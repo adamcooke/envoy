@@ -33,25 +33,41 @@ module Envoy
         channels[id].web.send_data data
       end
       
+      def key
+        @options[:key]
+      end
+      
+      def halt
+        send_object :halt
+        close_connection(true)
+      end
+      
       def receive_options options
         @options = options
         hosts = @options[:hosts] || []
-        hosts.delete_if do |label|
+        hosts.any? do |label|
           if label == "s"
-            send_object :message, "`s' is a reserved label"
+            send_object :message, "#{label}: label is reserved"
             true
           elsif label =~ /\./
-            send_object :message, "labels may not contain dots"
+            send_object :message, "#{label}: labels may not contain dots"
             true
+          elsif other_trunk = Trunk.trunks[label][0]
+            unless other_trunk.key == key
+              send_object :message, "#{label}: label in use, and you don't have the key"
+              true
+            end
           end
-        end
+        end && halt
         hosts << SecureRandom.random_number(36 ** 4).to_s(36) if hosts.empty?
-        m = ["Local server on port #{options[:local_port]} is now publicly available via:"]
+        m = ["#{options[:local_host]}:#{options[:local_port]} now available at:"]
         @hosts = hosts.each do |host|
           Trunk.trunks[host] << self
           m << "http://#{host}.#{$zone}/"
         end
-        send_object :message, m.join("\n")
+        @options[:key] ||= SecureRandom.hex(8)
+        send_object :message, m.join(" ")
+        send_object :message, "Your key is #{@options[:key]}"
       end
       
       def unbind
