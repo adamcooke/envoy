@@ -46,11 +46,12 @@ module Envoy
           end
         end
         hosts << SecureRandom.random_number(36 ** 4).to_s(36) if hosts.empty?
-        send_object :message, "Local server on port #{options[:local_port]} is now publicly available via:"
+        m = ["Local server on port #{options[:local_port]} is now publicly available via:"]
         @hosts = hosts.each do |host|
           Trunk.trunks[host] << self
-          send_object :message, "http://#{host}.#{$zone}/"
+          m << "http://#{host}.#{$zone}/"
         end
+        send_object :message, m.join("\n")
       end
       
       def unbind
