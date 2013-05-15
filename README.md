@@ -6,7 +6,7 @@ A clone of proxylocal. Both client and server are included.
 
 ## The client
 
-    envoyc [--host HOST] [--tls] [--server SERVER] [[ADDRESS:]PORT] 
+    envoyc [--key KEY] [--host HOST] [--tls] [--server SERVER] [[ADDRESS:]PORT] 
 
 Makes the HTTP* service running at ADDRESS:PORT available via a proxylocal
 service running on SERVER. The default server is p45.eu, and the default address
@@ -15,6 +15,9 @@ and port are 127.0.0.1 and 80.
 By default, the service will be available on a randomly generated domain name.
 e.g. 4iur.p45.eu. To specify the first component of the name, use the HOST
 argument.
+
+You can connect multiple clients to the same host name. To help prevent abuse,
+each client must present the KEY.
 
 ## The server
 
