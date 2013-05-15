@@ -43,7 +43,8 @@ module Envoy
       end
       
       def receive_message message
-        STDERR.puts message
+        t = Time.now.strftime("%F %T")
+        STDERR.puts t + " " + message.split("\n").join("\n#{t.gsub(/./, ' ')} ")
       end
       
       def receive_halt
