@@ -30,7 +30,9 @@ module Envoy
       end
       
       def receive_stream id, data
-        channels[id].web.send_data data
+        c = channels[id]
+        w = c && c.web
+        w && w.send_data(data)
       end
       
       def key
