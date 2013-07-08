@@ -5,6 +5,11 @@ module Envoy
     module Trunk
       include Protocol
       
+      def initialize key
+        super
+        @key = key
+      end
+      
       def self.trunks
         @trunks ||= Hash.new{|h,k|h[k] = []}
       end
@@ -39,13 +44,18 @@ module Envoy
         @options[:key]
       end
       
-      def halt
+      def halt message = nil
+        send_object :message, message if message
         send_object :halt
         close_connection(true)
       end
       
       def receive_options options
         @options = options
+        if @key and @key != @options[:key]
+          halt "Key is invalid"
+          return
+        end
         hosts = @options[:hosts] || []
         hosts.any? do |label|
           if label == "s"
@@ -67,9 +77,11 @@ module Envoy
           Trunk.trunks[host] << self
           m << "http://#{host}.#{$zone}/"
         end
-        @options[:key] ||= SecureRandom.hex(8)
         send_object :message, m.join(" ")
-        send_object :message, "Your key is #{@options[:key]}"
+        unless @options[:key]
+          @options[:key] ||= SecureRandom.hex(8)
+          send_object :message, "Your key is #{@options[:key]}"
+        end 
       end
       
       def unbind
