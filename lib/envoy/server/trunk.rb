@@ -22,9 +22,9 @@ module Envoy
         @channels ||= {}
       end
       
-      def receive_close id
+      def receive_close id, code = nil
         if chan = channels[id]
-          chan.web.close_connection(true)
+          chan.web.close(code)
           channels.delete id
         end
       end

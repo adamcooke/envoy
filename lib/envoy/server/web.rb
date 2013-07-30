@@ -11,6 +11,10 @@ module Envoy
         @connection = "close"
       end
       
+      def close code
+        chan.web.close_connection(true)
+      end
+      
       def unbind
         @channel.trunk.channels.delete @channel.id if @channel
       end
