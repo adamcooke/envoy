@@ -8,7 +8,7 @@ def default_options
     "tls" => false,
     "verbose" => false,
     "version" => Envoy::VERSION,
-    "command_delay" => 1,
+    "delay" => 1,
     "dir" => "."
   }
 end

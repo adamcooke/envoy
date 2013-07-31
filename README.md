@@ -50,7 +50,7 @@ connection is refused.
     tls            Use TLS in the server connections                  false
     verbose        Be noisy                                           false
     command        A command to run if a local connection is refused  None
-    command_delay  Number of seconds to wait before reconnecting,     1
+    delay          Number of seconds to wait before reconnecting,     1
                    after starting a command
     dir            A directory to change to                           None
 
