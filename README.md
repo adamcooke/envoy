@@ -40,18 +40,19 @@ will proxy multiple local services.
 This file can also contain settings which will execute a command if a local
 connection is refused.
 
-| Option        | Description | Default |
-| ------------- | ----------------------- | - |
-| `host`        | The domain name prefix | None |
-| `local_port`  | The local port to use | None |
-| `local_host`  | The local host to use | 127.0.0.1 |
-| `server_host` | The server host to use | p45.eu |
-| `server_port` | The server port to use | 8282 |
-| `tls`         | Use TLS in the server connections | false |
-| `verbose`     | Be noisy | false |
-| `command`     | A command to run if a local connection is refused | None |
-| `command_delay` | Number of seconds to wait before reconnecting, after starting a command | 1 |
-| `dir`           | A directory to change to | . |
+    Option         Description                                        Default
+    ---------------------------------------------------------------------------
+    host           The domain name prefix                             None
+    local_port     The local port to use                              None
+    local_host     The local host to use                              127.0.0.1
+    server_host    The server host to use                             p45.eu
+    server_port    The server port to use                             8282
+    tls            Use TLS in the server connections                  false
+    verbose        Be noisy                                           false
+    command        A command to run if a local connection is refused  None
+    command_delay  Number of seconds to wait before reconnecting,     1
+                   after starting a command
+    dir            A directory to change to                           None
 
 If no host is specified, a random one is selected by the server.
 If no local port is specified, a random one is selected by the client.
