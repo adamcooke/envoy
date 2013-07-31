@@ -61,12 +61,12 @@ including any randomly selected local port.
 
 e.g. To start a set of rails apps, you might use this configuration:
 
-   - host: backend
-     dir: ~/apps/backend
-     command: rails s -p %{local_port}
-   - host: frontend
-     dir: ~/apps/frontend
-     command: rails s -p %{local_port}
+    - host: backend
+      dir: ~/apps/backend
+      command: rails s -p %{local_port}
+    - host: frontend
+      dir: ~/apps/frontend
+      command: rails s -p %{local_port}
 
 You can still specify a constant local port, if you prefer that.
 
