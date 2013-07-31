@@ -29,3 +29,37 @@ specified host and port, which default to 0.0.0.0 and 8080.
 If KEY is specified, clients _must_ specify that key.
 
 The ZONE specifies the domain name suffix.
+
+## Advanced Client Configuration
+
+The client will search up from the current directory for a .envoy file. If it
+exists, it must be a YAML file containing either one hash of command line
+options, or an array of multiple options. This file can also contain settings
+which will execute a command if a local connection is refused.
+
+| Option        | Description | Default |
+| ------------- | ----------------------- | - |
+| `host`        | The domain name prefix | None |
+| `local_port`  | The local port to use | None |
+| `local_host`  | The local host to use | 127.0.0.1 |
+| `server_host` | The server host to use | p45.eu |
+| `server_port` | The server port to use | 8282 |
+| `tls`         | Use TLS in the server connections | false |
+| `verbose`     | Be noisy | false |
+| `command`     | A command to run if a local connection is refused | None |
+| `command_delay` | Number of seconds to wait before reconnecting, after starting a command | 1 |
+| `dir`           | A directory to change to | . |
+
+If no host is specified, a random one is selected by the server.
+If no local port is specified, a random one is selected by the client.
+The command is processed for % substitions against the configuration hash,
+including any randomly selected local port.
+
+e.g. To start a rails app, you might use this configuration:
+
+   host: my_app
+   dir: ~/apps/my_app
+   command: rails s -p %{local_port}
+
+You can still specify a constant local port, if you prefer that.
+

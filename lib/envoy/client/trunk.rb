@@ -42,9 +42,13 @@ module Envoy
       def receive_keepalive
       end
       
-      def receive_message message
+      def log message
         t = Time.now.strftime("%F %T")
         STDERR.puts t + " " + message.split("\n").join("\n#{t.gsub(/./, ' ')} ")
+      end
+      
+      def receive_message message
+        log message
       end
       
       def receive_halt

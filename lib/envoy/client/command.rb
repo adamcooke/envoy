@@ -1,61 +1,38 @@
 require 'envoy/client/trunk'
+require 'envoy/client/option_parser'
 require 'envoy/version'
+require 'yaml'
 
-require 'optparse'
-require 'ostruct'
-
-options = {
-  server_host: 'p45.eu',
-  server_port: "8282",
-  local_host: '127.0.0.1',
-  local_port: "80",
-  tls: false,
-  verbose: false,
-  version: Envoy::VERSION
-}
-
-OptionParser.new do |op|
-  op.banner = "Usage: #{$0} [options] [[HOST:]PORT]"
-  op.on "--host HOST", "Allocate this domain label on the proxy" do |v|
-    options[:hosts] ||= []
-    options[:hosts] << v
+def find_config
+  dirs = Dir.pwd.split("/")
+  r = dirs.reduce([]) do |m, x|
+    [[*m[0], x], *m]
+  end.map do |p|
+    p.join("/") + "/.envoy"
+  end.each do |p|
+    return p if File.exist?(p)
   end
-  op.on "-k", "--key KEY" do |v|
-    options[:key] = v
-  end
-  op.on "-t", "--[no-]tls", "Encrypt communications with the envoy server" do |v|
-    options[:tls] = v
-  end
-  op.on "-s", "--server SERVER", "Specify envoy/proxylocal server" do |v|
-    host, port = v.split(":")
-    options[:server_host] = host
-    options[:server_port] ||= port
-  end
-  op.on "-v", "--[no-]verbose", "Be noisy about what's happening" do |v|
-    options[:verbose] = v
-  end
-  op.on "-h", "--help", "Show this message" do
-    puts op
-    exit
-  end
-  op.on "--version" do
-    puts Envoy::VERSION
-    exit
-  end
-  op.parse!
-  case ARGV[0]
-  when /^(\d+)$/
-    options[:local_port] = $1
-  when /^(\[[^\]+]\]|[^:]+):(\d+)$/x
-    options[:local_host] = $1
-    options[:local_port] = $2
-  when /^(.*)$/
-    options[:local_host] = $1
-  end
+  false
 end
+
+def load_config
+  conf = YAML.load(File.read(find_config))
+  conf.is_a?(Array) ? conf : [conf]
+end
+
+options = parse_options
 
 unless EM.reactor_running?
   EM.run do
-    Envoy::Client::Trunk.start options
+    load_config.each do |config|
+      config["local_port"] ||= rand(16383) + 49152
+      config = options.merge(config)
+      config["hosts"] ||= [config.delete("host")]
+      config = config.each_with_object({}) do |(k, v), h|
+        h[k.to_sym] = v
+      end
+      Envoy::Client::Trunk.start p config
+    end
   end
 end
+
