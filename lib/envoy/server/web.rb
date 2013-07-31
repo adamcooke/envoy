@@ -12,7 +12,7 @@ module Envoy
       end
       
       def close code
-        chan.web.close_connection(true)
+        close_connection(true)
       end
       
       def unbind
