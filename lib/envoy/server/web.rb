@@ -11,7 +11,18 @@ module Envoy
         @connection = "close"
       end
       
+      def send_page status, message
+        send_data "HTTP/1.0 #{status} Message\r\n"
+        send_data "Content-Type: text/plain\r\n"
+        send_data "\r\n"
+        send_data "#{message}\r\n"
+      end
+      
       def close code
+        case code
+        when 502
+          send_page code, "The service isn't running, and couldn't be started." 
+        end
         close_connection(true)
       end
       
@@ -42,10 +53,7 @@ module Envoy
           @header << line + "\r\n"
         end
       rescue RuntimeError => e
-        send_data "HTTP/1.0 500 Internal Server Error\r\n"
-        send_data "Content-Type: text/plain\r\n"
-        send_data "\r\n"
-        send_data "#{e.message}\r\n"
+        send_page 500, e.inspect
         close_connection true
       end
       
