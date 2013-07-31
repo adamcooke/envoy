@@ -34,8 +34,11 @@ The ZONE specifies the domain name suffix.
 
 The client will search up from the current directory for a .envoy file. If it
 exists, it must be a YAML file containing either one hash of command line
-options, or an array of multiple options. This file can also contain settings
-which will execute a command if a local connection is refused.
+options, or an array of multiple options. If an array is passed, the client
+will proxy multiple local services.
+
+This file can also contain settings which will execute a command if a local
+connection is refused.
 
 | Option        | Description | Default |
 | ------------- | ----------------------- | - |
@@ -55,11 +58,14 @@ If no local port is specified, a random one is selected by the client.
 The command is processed for % substitions against the configuration hash,
 including any randomly selected local port.
 
-e.g. To start a rails app, you might use this configuration:
+e.g. To start a set of rails apps, you might use this configuration:
 
-   host: my_app
-   dir: ~/apps/my_app
-   command: rails s -p %{local_port}
+   - host: backend
+     dir: ~/apps/backend
+     command: rails s -p %{local_port}
+   - host: frontend
+     dir: ~/apps/frontend
+     command: rails s -p %{local_port}
 
 You can still specify a constant local port, if you prefer that.
 
