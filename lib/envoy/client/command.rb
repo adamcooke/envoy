@@ -16,8 +16,12 @@ def find_config
 end
 
 def load_config
-  conf = YAML.load(File.read(find_config))
-  conf.is_a?(Array) ? conf : [conf]
+  if path = find_config
+    conf = YAML.load(File.read(path))
+    conf.is_a?(Array) ? conf : [conf]
+  else
+    [{}]
+  end
 end
 
 options = parse_options
@@ -27,7 +31,7 @@ unless EM.reactor_running?
     load_config.each do |config|
       config["local_port"] ||= rand(16383) + 49152
       config = options.merge(config)
-      config["hosts"] ||= [config.delete("host")]
+      config["hosts"] ||= [config.delete("host")] if config["host"]
       config = config.each_with_object({}) do |(k, v), h|
         h[k.to_sym] = v
       end
