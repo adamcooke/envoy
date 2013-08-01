@@ -51,6 +51,10 @@ module Envoy
         log message
       end
       
+      def receive_ping
+        send_object :pong
+      end
+      
       def receive_halt
         @halting = true
         EventMachine.stop_event_loop
@@ -78,7 +82,7 @@ module Envoy
       def ssl_handshake_completed
         options[:did_connect] = true
         options[:reconnect] = %w"- \\ | /" if options[:hosts]
-       send_object :options, options
+        send_object :options, options
       end
       
       def post_init

@@ -14,12 +14,19 @@ module Envoy
         @trunks ||= Hash.new{|h,k|h[k] = []}
       end
       
+      def post_init
+        self.comm_inactivity_timeout = 25
+      end
+      
       def hosts
         @hosts ||= []
       end
       
       def channels
         @channels ||= {}
+      end
+      
+      def receive_pong
       end
       
       def receive_close id, code = nil
@@ -52,6 +59,15 @@ module Envoy
       
       def receive_options options
         @options = options
+        if (@options[:version].split(".").map(&:to_i) <=> [0, 1, 0]) > -1
+          EM.add_periodic_timer 5 do
+            send_object :ping
+          end
+        else
+          EM.add_periodic_timer 20 do
+            send_object :message, "Checking client is still here. Upgrade to hide this message."
+          end
+        end
         if @key and @key != @options[:key]
           halt "Key is invalid"
           return
@@ -81,7 +97,7 @@ module Envoy
         unless @options[:key]
           @options[:key] ||= SecureRandom.hex(8)
           send_object :message, "Your key is #{@options[:key]}"
-        end 
+        end
       end
       
       def unbind

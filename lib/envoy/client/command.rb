@@ -35,7 +35,7 @@ unless EM.reactor_running?
       config = config.each_with_object({}) do |(k, v), h|
         h[k.to_sym] = v
       end
-      Envoy::Client::Trunk.start p config
+      Envoy::Client::Trunk.start config
     end
   end
 end
