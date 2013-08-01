@@ -6,7 +6,7 @@ A clone of proxylocal. Both client and server are included.
 
 ## The client
 
-    envoy [--key KEY] [--host HOST] [--tls] [--server SERVER] [[ADDRESS:]PORT] 
+    envoy [--key KEY] [--host HOST] [--tls] [--server SERVER] [--log FILE] [[ADDRESS:]PORT] 
 
 Makes the HTTP* service running at ADDRESS:PORT available via a proxylocal
 service running on SERVER. The default server is p45.eu, and the default address
@@ -53,6 +53,7 @@ connection is refused.
     delay          Number of seconds to wait before reconnecting,     1
                    after starting a command
     dir            A directory to change to                           None
+    log            A file to log to                                   /dev/stderr
 
 If no host is specified, a random one is selected by the server.
 If no local port is specified, a random one is selected by the client.

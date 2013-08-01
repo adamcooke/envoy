@@ -35,6 +35,12 @@ def parse_options
     op.on "-v", "--[no-]verbose", "Be noisy about what's happening" do |v|
       options["verbose"] = v
     end
+    op.on "--no-log", "Don't show HTTP log" do |v|
+      options["log"] = false
+    end
+    op.on "l", "--log FILE", "Write HTTP log to this file" do |v|
+      options["log"] = v
+    end
     op.on "-h", "--help", "Show this message" do
       puts op
       exit

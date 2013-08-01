@@ -5,6 +5,11 @@ module Envoy
     module Trunk
       include Protocol
       
+      def log message
+        t = Time.now.strftime("%F %T")
+        STDERR.puts t + " " + message.split("\n").join("\n#{t.gsub(/./, ' ')} ")
+      end
+      
       def initialize key
         super
         @key = key

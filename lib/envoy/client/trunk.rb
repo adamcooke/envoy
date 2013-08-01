@@ -15,6 +15,10 @@ module Envoy
       
       def initialize options
         @options = options
+        @log = STDERR
+        if @options.has_key?(:log)
+          @log = @options[:log] && File.open(@options[:log], "a")
+        end
       end
       
       def channels
@@ -42,9 +46,11 @@ module Envoy
       def receive_keepalive
       end
       
-      def log message
+      def log message, io = @log
+        return unless io
         t = Time.now.strftime("%F %T")
-        STDERR.puts t + " " + message.split("\n").join("\n#{t.gsub(/./, ' ')} ")
+        io.puts t + " " + message.split("\n").join("\n#{t.gsub(/./, ' ')} ")
+        io.flush
       end
       
       def receive_message message
