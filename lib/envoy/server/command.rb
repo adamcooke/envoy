@@ -1,5 +1,6 @@
 require 'envoy/server/trunk'
 require 'envoy/server/web'
+require 'envoy/version'
 require 'optparse'
 
 listen = ["0.0.0.0", "8080"]
