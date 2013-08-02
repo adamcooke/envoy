@@ -29,8 +29,8 @@ options = parse_options
 unless EM.reactor_running?
   EM.run do
     load_config.each do |config|
-      config["local_port"] ||= rand(16383) + 49152
       config = options.merge(config)
+      config["local_port"] ||= rand(16383) + 49152
       config["hosts"] ||= [config.delete("host")] if config["host"]
       config = config.each_with_object({}) do |(k, v), h|
         h[k.to_sym] = v
@@ -39,4 +39,3 @@ unless EM.reactor_running?
     end
   end
 end
-
