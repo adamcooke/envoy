@@ -20,7 +20,7 @@ def load_config
     conf = YAML.load(File.read(path))
     conf.is_a?(Array) ? conf : [conf]
   else
-    [{}]
+    [{"local_port" => "80"}]
   end
 end
 
