@@ -92,6 +92,7 @@ module Envoy
       end
       
       def post_init
+        self.comm_inactivity_timeout = 25
         send_object :start_tls
       end
       
