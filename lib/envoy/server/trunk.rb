@@ -32,6 +32,10 @@ module Envoy
       end
       
       def receive_pong
+        EM.add_timer 5 do
+          log "ping"
+          send_object :ping
+        end
       end
       
       def receive_close id, code = nil
@@ -65,13 +69,9 @@ module Envoy
       def receive_options options
         @options = options
         if (@options[:version].split(".").map(&:to_i) <=> [0, 1, 0]) > -1
-          EM.add_periodic_timer 5 do
-            send_object :ping
-          end
+          receive_pong
         else
-          EM.add_periodic_timer 20 do
-            send_object :message, "Checking client is still here. Upgrade to hide this message."
-          end
+          send_object :message, "Your client is out of date. Please upgrade to at least 0.1.0."
         end
         if @key and @key != @options[:key]
           halt "Key is invalid"
