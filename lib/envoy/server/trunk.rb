@@ -74,8 +74,9 @@ module Envoy
         @options = options
         if version? "~> 0.1"
           receive_pong
-        else
-          send_object :message, "Your client is out of date. Please upgrade to at least 0.1.0."
+        end
+        if version? "< #{Envoy::VERSION}"
+          send_object :message, "Your client is out of date. Please upgrade to #{Envoy::VERSION}."
         end
         if @key and @key != @options[:key]
           halt "Key is invalid"
