@@ -66,9 +66,13 @@ module Envoy
         close_connection(true)
       end
       
+      def version? *requirement
+        Gem::Requirement.new(*requirement) =~ Gem::Version.new(@options[:version])
+      end
+      
       def receive_options options
         @options = options
-        if (@options[:version].split(".").map(&:to_i) <=> [0, 1, 0]) > -1
+        if version? "~> 0.1"
           receive_pong
         else
           send_object :message, "Your client is out of date. Please upgrade to at least 0.1.0."
