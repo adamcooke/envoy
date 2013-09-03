@@ -42,7 +42,7 @@ connection is refused.
 
     Option         Description                                        Default
     ---------------------------------------------------------------------------
-    host           The domain name prefix                             None
+    host           The domain name prefix                             Last component of dir, or None
     local_port     The local port to use                              None
     local_host     The local host to use                              127.0.0.1
     server_host    The server host to use                             p45.eu
@@ -50,10 +50,14 @@ connection is refused.
     tls            Use TLS in the server connections                  false
     verbose        Be noisy                                           false
     command        A command to run if a local connection is refused  None
-    delay          Number of seconds to wait before reconnecting,     1
-                   after starting a command
+    delay          Number of seconds to wait for a command to start   1
     dir            A directory to change to                           None
+    rails          A directory to change to; contains a Rails app     None
+    rackup         A directory to change to; contains a Rack app      None
     log            A file to log to                                   /dev/stderr
+
+The `rails` and `rackup` options specify `dir` and `command` options for Rails
+and Rack applications, respectively.
 
 If no host is specified, a random one is selected by the server.
 If no local port is specified, a random one is selected by the client.

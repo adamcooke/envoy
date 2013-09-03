@@ -12,6 +12,7 @@ module Envoy
       end
       
       def connection_completed
+        @tried_starting = nil
         send_data @buffer, true
         @buffer = nil
       end
@@ -35,15 +36,22 @@ module Envoy
       def unbind e
         if e == Errno::ECONNREFUSED
           if @tried_starting
-            @client.log "Service isn't running, but starting it didn't really work out."
-            @client.send_object :close, @id, 502
+            if Time.now > @tried_starting + @client.options[:delay]
+              @client.log "Service isn't running, but starting it didn't really work out."
+              @client.send_object :close, @id, 502
+              @tried_starting = false
+            else
+              EM.add_timer 0.1 do
+                reconnect
+              end
+            end
           elsif cmd = @client.options[:command]
             cmd = cmd % @client.options
             @client.log "Service doesn't seem to be running. Trying to start it now..."
-            @tried_starting = true
+            @tried_starting = Time.now
+            p @client.options[:dir]
             Dir.chdir File.expand_path(@client.options[:dir]) do
               fork do
-                #Process.daemon(true, false)
                 ENV.delete("GEM_HOME")
                 ENV.delete("GEM_PATH")
                 ENV.delete("BUNDLE_BIN_PATH")
@@ -51,7 +59,7 @@ module Envoy
                 system cmd
               end
             end
-            EM.add_timer @client.options[:delay] do
+            EM.add_timer 0.1 do
               reconnect
             end
           end
