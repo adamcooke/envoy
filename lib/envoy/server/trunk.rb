@@ -15,7 +15,7 @@ module Envoy
       end
       
       def post_init
-        self.comm_inactivity_timeout = 25
+        self.comm_inactivity_timeout = 60
       end
       
       def hosts
@@ -27,7 +27,7 @@ module Envoy
       end
       
       def receive_pong
-        EM.add_timer 5 do
+        EM.add_timer 30 do
           send_object :ping
         end
       end
