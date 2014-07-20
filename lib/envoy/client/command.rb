@@ -33,7 +33,7 @@ def load_config
       conf["dir"] = File.expand_path(conf["dir"], path + "/..") if conf["dir"]
     end
   else
-    [{"local_port" => "80"}]
+    [{}]
   end
 end
 
@@ -42,8 +42,8 @@ options = parse_options
 unless EM.reactor_running?
   EM.run do
     load_config.each do |config|
-      config = options.merge(config)
-      config["local_port"] ||= rand(16383) + 49152
+      config = config.merge(options)
+      config["local_port"] ||= config["command"] ? rand(16383) + 49152 : 80
       config["hosts"] ||= [config.delete("host")] if config["host"]
       config = config.each_with_object({}) do |(k, v), h|
         h[k.to_sym] = v

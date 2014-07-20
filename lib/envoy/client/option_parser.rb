@@ -16,41 +16,39 @@ end
 def parse_options
   options = default_options
   OptionParser.new do |op|
-    op.banner = "Usage: #{$0} [options] [[HOST:]PORT]"
-    op.on "--host HOST", "Allocate this domain label on the proxy" do |v|
+    op.banner = "Usage: #{$0} [options] [[HOST:]PORT] [LABEL]"
+    op.on "-l LABEL", "--label", "--host", "Allocate this domain label on the proxy" do |v|
       options["hosts"] ||= []
       options["hosts"] << v
     end
-    op.on "-k", "--key KEY" do |v|
+    op.on "-k KEY", "--key", "Secure access to the label with this key" do |v|
       options["key"] = v
     end
-    op.on "-t", "--[no-]tls", "Encrypt communications with the envoy server" do |v|
-      options["tls"] = v
-    end
-    op.on "-s", "--server SERVER", "Specify envoy/proxylocal server" do |v|
+    op.on "-s SERVER", "--server", "Specify envoy server" do |v|
       host, port = v.split(":")
       options["server_host"] = host
       options["server_port"] ||= port
     end
-    op.on "-v", "--[no-]verbose", "Be noisy about what's happening" do |v|
-      options["verbose"] = v
-    end
-    op.on "--no-log", "Don't show HTTP log" do |v|
-      options["log"] = false
-    end
-    op.on "l", "--log FILE", "Write HTTP log to this file" do |v|
-      options["log"] = v
+    op.on "-c COMMAND", "Run this command" do |v|
+      options["command"] = v
     end
     op.on "-h", "--help", "Show this message" do
       puts op
       exit
     end
-    op.on "--version" do
+    op.on "-V", "--version", "Show version number" do
       puts Envoy::VERSION
       exit
     end
     op.parse!
     case ARGV[0]
+    when "rails"
+      options["pidfile"] = "tmp/pids/server.pid"
+      options["command"] = "rails s -p %{local_port}"
+      options["delay"] = 10
+    when "rackup"
+      options["command"] = "rackup -p %{local_port}"
+      options["delay"] = 10
     when /^(\d+)$/
       options["local_port"] = $1
     when /^(\[[^\]+]\]|[^:]+):(\d+)$/x
@@ -58,6 +56,10 @@ def parse_options
       options["local_port"] = $2
     when /^(.*)$/
       options["local_host"] = $1
+    end
+    if ARGV[1]
+      options["hosts"] ||= []
+      options["hosts"] << ARGV[1]
     end
   end
   options
