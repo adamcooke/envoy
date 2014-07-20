@@ -94,6 +94,7 @@ module Envoy
       def post_init
         self.comm_inactivity_timeout = 25
         send_object :start_tls
+        log "exporting: #{@options[:local_host]}:#{@options[:local_port]}"
       end
       
     end
