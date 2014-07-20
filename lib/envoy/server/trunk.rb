@@ -85,14 +85,14 @@ module Envoy
         hosts = @options[:hosts] || []
         hosts.any? do |label|
           if label == "s"
-            send_object :message, "#{label}: label is reserved"
+            send_object :message, "label is reserved: `#{label}'"
             true
           elsif label =~ /\./
-            send_object :message, "#{label}: labels may not contain dots"
+            send_object :message, "label is invalid: `#{label}'"
             true
           elsif other_trunk = Trunk.trunks[label][0]
             unless other_trunk.key == key
-              send_object :message, "#{label}: label in use, and you don't have the key"
+              send_object :message, "label is protected with a key: `#{label}'"
               true
             end
           end
@@ -101,12 +101,11 @@ module Envoy
         m = ["#{options[:local_host]}:#{options[:local_port]} now available at:"]
         @hosts = hosts.each do |host|
           Trunk.trunks[host] << self
-          m << "http://#{host}.#{$zone}/"
+          send_object :message, "host: #{host}.#{$zone}"
         end
-        send_object :message, m.join(" ")
         unless @options[:key]
           @options[:key] ||= SecureRandom.hex(8)
-          send_object :message, "Your key is #{@options[:key]}"
+          send_object :message, "key: #{@options[:key]}"
         end
       end
       
