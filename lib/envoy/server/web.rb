@@ -11,17 +11,24 @@ module Envoy
         @connection = "close"
       end
       
-      def send_page status, message
+      def send_page status, title, message
         send_data "HTTP/1.0 #{status} Message\r\n"
-        send_data "Content-Type: text/plain\r\n"
+        send_data "Content-Type: text/html\r\n"
         send_data "\r\n"
-        send_data "#{message}\r\n"
+        send_data "<title>#{title}</title>\r\n"
+        send_data "<h1>#{title}</h1>\r\n"
+        send_data "<p>#{message}\r\n"
+      end
+      
+      def fail (status, title, message)
+        send_page(500, title, message)
+        close_connection true
       end
       
       def close code
         case code
         when 502
-          send_page code, "The service isn't running, and couldn't be started." 
+          send_page 502, "Bad Gateway", "The service isn't running, and couldn't be started." 
         end
         close_connection(true)
       end
@@ -33,7 +40,7 @@ module Envoy
       def receive_line line
         @first_line ||= line
         if line == ""
-          trunk = Trunk.trunks[@host].sample || raise("No trunk for #{@host}.#{$zone}")
+          trunk = Trunk.trunks[@host].sample || (return fail(404, "Not Found", "No trunk for #{@host}.#{$zone}"))
           @header << "Connection: #{@connection}\r\n\r\n"
           @channel = Channel.new(trunk, self, @header)
           @channel.message "%s %s" % [Socket.unpack_sockaddr_in(get_peername)[1], @first_line]
@@ -48,12 +55,12 @@ module Envoy
           @host = @host.split(".").last
           @header << line + "\r\n"
         elsif @header.size > 4096
-          raise "Header's too long for my liking"
+          return fail(400, "Bad Request", "Header's too long for my liking")
         else
           @header << line + "\r\n"
         end
       rescue RuntimeError => e
-        send_page 500, e.inspect
+        send_page 500, "Internal Server Error", e.inspect
         close_connection true
       end
       
