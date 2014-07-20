@@ -77,6 +77,8 @@ module Envoy
         end
         if version? "< #{Envoy::VERSION}"
           send_object :message, "Your client is out of date. Please upgrade to #{Envoy::VERSION}."
+        elsif version? "> #{Envoy::VERSION}"
+          send_object :message, "Your client is from the future. The server is expecting #{Envoy::VERSION}."
         end
         if @key and @key != @options[:key]
           halt "Key is invalid"
