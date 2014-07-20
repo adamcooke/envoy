@@ -1,11 +1,24 @@
 require 'eventmachine'
 require 'bert'
 
+TRACE = 5
+DEBUG = 4
+INFO  = 3
+WARN  = 2
+ERROR = 1
+FATAL = 0
+
 module Envoy
 
   module Protocol
     include EM::P::ObjectProtocol
     
+    VERBOSITIES = %w"FATAL ERROR WARN\  INFO\  DEBUG TRACE"
+    
+    def verbosity
+      @verbosity ||= [FATAL, [TRACE, @options[:verbosity] || 3].min].max
+    end
+      
     module Serializer
       def self.dump(object)
         BERT.encode(object)

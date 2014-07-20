@@ -6,10 +6,13 @@ def default_options
     "server_port" => "8282",
     "local_host" => '127.0.0.1',
     "tls" => false,
-    "verbose" => false,
+    "verbosity" => 3,
     "version" => Envoy::VERSION,
     "delay" => 1,
-    "dir" => "."
+    "dir" => ".",
+    "timestamps" => false,
+    "show_log_level" => true,
+    "color_log_level" => true,
   }
 end
 
@@ -31,6 +34,12 @@ def parse_options
     end
     op.on "-c COMMAND", "Run this command" do |v|
       options["command"] = v
+    end
+    op.on "-v", "--verbose", "Show messages. Repeat to show more." do
+      options["verbosity"] += 1
+    end
+    op.on "-q", "--quiet", "Hide messages. Repeat to hide more." do
+      options["verbosity"] -= 1
     end
     op.on "-h", "--help", "Show this message" do
       puts op

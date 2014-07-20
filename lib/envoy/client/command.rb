@@ -41,6 +41,14 @@ options = parse_options
 
 unless EM.reactor_running?
   EM.run do
+    Signal.trap("INT") do
+      $exiting = true
+      EventMachine.stop
+    end
+    Signal.trap("TERM") do
+      $exiting = true
+      EventMachine.stop
+    end
     load_config.each do |config|
       config = config.merge(options)
       config["local_port"] ||= config["command"] ? rand(16383) + 49152 : 80

@@ -12,6 +12,7 @@ module Envoy
       end
       
       def connection_completed
+        @client.log TRACE, "connected to upstream service for stream #{@id}"
         @tried_starting = nil
         send_data @buffer, true
         @buffer = nil
@@ -26,18 +27,21 @@ module Envoy
       end
       
       def receive_data data
+        @client.log TRACE, "#{data.length} bytes of data send on stream #{@id}"
         @client.send_object :stream, @id, data
       end
       
       def reconnect
+        @client.log TRACE, "reconnecting to upstream service for stream #{@id}"
         super @client.options[:local_host], @client.options[:local_port]
       end
       
       def unbind e
         if e == Errno::ECONNREFUSED
+          @client.log TRACE, "couldn't connect to upstream service for stream #{@id}"
           if @tried_starting
             if Time.now > @tried_starting + @client.options[:delay]
-              @client.log "Service isn't running, but starting it didn't really work out."
+              @client.log ERROR, "Service isn't running, but starting it didn't really work out."
               @client.send_object :close, @id, 502
               @tried_starting = false
             else
@@ -47,7 +51,7 @@ module Envoy
             end
           elsif cmd = @client.options[:command]
             cmd = cmd % @client.options
-            @client.log "Service doesn't seem to be running. Trying to start it now..."
+            @client.log INFO, "Service doesn't seem to be running. Trying to start it now..."
             @tried_starting = Time.now
             p @client.options[:dir]
             Dir.chdir File.expand_path(@client.options[:dir]) do
@@ -64,8 +68,9 @@ module Envoy
             end
           end
         elsif e
-          @client.log e.inspect
+          @client.log ERROR, e.inspect
         else
+          @client.log TRACE, "upstream service closed stream #{@id}"
           @client.send_object :close, @id
         end
       end
