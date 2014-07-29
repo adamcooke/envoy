@@ -53,6 +53,11 @@ module Envoy
         Gem::Requirement.new(*requirement) =~ Gem::Version.new(@options[:version])
       end
       
+      def receive_start_tls
+        send_object :start_tls
+        start_tls
+      end
+      
       def receive_pong
         unless @pinged
           send_object :ping
@@ -69,11 +74,6 @@ module Envoy
           chan.web.close(code)
           channels.delete id
         end
-      end
-      
-      def receive_start_tls
-        send_object :start_tls
-        start_tls
       end
       
       def receive_stream id, data
