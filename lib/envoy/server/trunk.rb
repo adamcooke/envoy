@@ -111,12 +111,10 @@ module Envoy
         end && halt
         if hosts.empty?
           hosts = [SecureRandom.random_number(36 ** 4).to_s(36)]
-          message Envoy::INFO, "Service accessible at http://#{hosts[0]}.#{$zone}/"
-        else
-          @hosts = hosts.each do |host|
-            Trunk.trunks[host] << self
-            message Envoy::INFO, "Service accessible at http://#{host}.#{$zone}/"
-          end
+        end
+        @hosts = hosts.each do |host|
+          Trunk.trunks[host] << self
+          message Envoy::INFO, "Service accessible at http://#{host}.#{$zone}/"
         end
         unless @options[:key]
           @options[:key] = SecureRandom.hex(8)
