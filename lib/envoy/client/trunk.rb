@@ -8,19 +8,17 @@ module Envoy
     module Trunk
       include Protocol
       
-      attr_reader :options
+      attr_reader :config
       
-      def self.start options
-        EM.connect options[:server_host], options[:server_port].to_i, Envoy::Client::Trunk, options
+      State = Struct.new(:connected, :reconnects)
+      
+      def self.start (config, state = State.new(false, 0))
+        EM.connect(*config.server, Envoy::Client::Trunk, config, state)
       end
       
-      def initialize options
-        @options = options
-        @log = STDERR
-        if @options.has_key?(:log)
-          @log = @options[:log] && File.open(@options[:log], "a")
-        end
-        log DEBUG, "envoy #{Envoy::VERSION} starting up"
+      def initialize (config, state)
+        @config = config
+        @state = state
       end
       
       def channels
@@ -33,39 +31,33 @@ module Envoy
       end
       
       def receive_close id
+        return unless channels[id]
         log TRACE, "closed stream #{id}"
         channels[id].close_connection true
         channels.delete(id)
       end
       
       def receive_stream id, data
+        return unless channels[id]
         log TRACE, "#{data.length} bytes of data received on stream #{id}"
         channels[id].send_data data
       end
       
       def receive_connection id
         log TRACE, "New connection request with id `#{id}'"
-        channels[id] = EM.connect(options[:local_host] || '127.0.0.1',
-                                  options[:local_port], Channel, id, self)
+        channels[id] = case @config.export[0]
+          when :tcp
+            EM.connect(*@config.export[1, 2], Channel, id, self)
+          when :unix
+            EM.connect_unix_domain(*@config.export[1], Channel, id, self)
+          else
+            raise @config.export[0].inspect
+          end
+      rescue
+        send_object :close, id
       end
       
       def receive_keepalive
-      end
-      
-      def log (level, text, io = @log)
-        return unless io
-        return unless level <= verbosity
-        message = [
-          @options[:timestamps] ? Time.now.strftime("%F %T") : nil,
-          @options[:show_log_level] ? "#{VERBOSITIES[level][0]}:" : nil,
-          text
-        ].compact.join(" ")
-        if @options[:color_log_level]
-          #FATAL ERROR WARN\  INFO\  DEBUG TRACE
-          message = message.colorize(%i"red red yellow green default light_black"[level])
-        end 
-        io.puts message
-        io.flush
       end
       
       def receive_message text, level = INFO
@@ -73,6 +65,9 @@ module Envoy
       end
       
       def receive_ping
+        unless @state.connected
+          ssl_handshake_completed
+        end
         log TRACE, "Server pinged. Ponging back."
         send_object :pong
       end
@@ -86,39 +81,39 @@ module Envoy
         log DEBUG, "Server confirmed our request. Proxy set up."
       end
       
+      def log (*args)
+        Envoy.log(*args)
+      end
+      
       def unbind
         if @halting
           log DEBUG, "Shutting down because server told us to."
         elsif $exiting
           log DEBUG, "Shutting down because the local system told us to."
-        elsif !@halting && r = @options[:reconnect]
-          log WARN, "Lost connection. Retrying..." if r == 0
+        elsif @state.connected
+          log WARN, "Lost connection. Retrying..." if @state.reconnects == 0
           EM.add_timer 0.5 do
-            @options[:reconnect] += 1
-            Trunk.start @options
+            @state.reconnects += 1
+            Trunk.start(@config, @state)
           end
         else
-          if options[:did_connect]
-            log FATAL, "Connection lost. Not point reconnecting because the host is randomly generated."
-          else
-            log FATAL, "Couldn't connect. Abandoning ship."
-          end
+          log FATAL, "Couldn't connect. Abandoning ship."
           EventMachine.stop_event_loop
         end
       end
       
       def ssl_handshake_completed
         log DEBUG, "Channel is secure, sending options"
-        options[:did_connect] = true
-        options[:reconnect] = 0 if options[:hosts]
-        send_object :options, options
-        log DEBUG, "Exporting #{@options[:local_host]}:#{@options[:local_port]}"
+        @state.connected = true
+        send_object :options, @config.options
+        log DEBUG, "Exporting #{@config.export.join(":")}"
       end
       
       def post_init
-        self.comm_inactivity_timeout = 25
-        log DEBUG, "Requesting TLS negotiation."
-        send_object :start_tls
+        self.comm_inactivity_timeout = 60
+        log TRACE, "Requesting TLS negotiation."
+        #send_object :start_tls
+        send_object :pong
       end
       
     end

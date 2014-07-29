@@ -27,6 +27,7 @@ $zone = ARGV[0].gsub(/^\.+/, '')
 
 unless EM.reactor_running?
   EM.run do
+    Envoy.verbosity = Envoy::FATAL
     EM.start_server "0.0.0.0", 8282, Envoy::Server::Trunk, key
     EM.start_server *listen, Envoy::Server::Web
   end

@@ -3,9 +3,11 @@
 
 begin
   require 'envoy/client/command'
+  Envoy::Client::Command.new.run(ARGV)
 rescue LoadError
   path = File.expand_path '../../lib', __FILE__
   $:.unshift path if File.directory?(path)
   require 'envoy/client/command'
+  Envoy::Client::Command.new.run(ARGV)
 end
 

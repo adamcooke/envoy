@@ -38,39 +38,13 @@ module Envoy
       
       def unbind e
         if e == Errno::ECONNREFUSED
-          @client.log TRACE, "couldn't connect to upstream service for stream #{@id}"
-          if @tried_starting
-            if Time.now > @tried_starting + @client.options[:delay]
-              @client.log ERROR, "Service isn't running, but starting it didn't really work out."
-              @client.send_object :close, @id, 502
-              @tried_starting = false
-            else
-              EM.add_timer 0.1 do
-                reconnect
-              end
-            end
-          elsif cmd = @client.options[:command]
-            cmd = cmd % @client.options
-            @client.log INFO, "Service doesn't seem to be running. Trying to start it now..."
-            @tried_starting = Time.now
-            p @client.options[:dir]
-            Dir.chdir File.expand_path(@client.options[:dir]) do
-              fork do
-                ENV.delete("GEM_HOME")
-                ENV.delete("GEM_PATH")
-                ENV.delete("BUNDLE_BIN_PATH")
-                ENV.delete("BUNDLE_GEMFILE")
-                system cmd
-              end
-            end
-            EM.add_timer 0.1 do
-              reconnect
-            end
-          end
+          @client.log ERROR, "couldn't connect to upstream service for stream #{@id}"
+          @client.send_object :close, @id
         elsif e
           @client.log ERROR, e.inspect
+          @client.send_object :close, @id
         else
-          @client.log TRACE, "upstream service closed stream #{@id}"
+          @client.log DEBUG, "upstream service closed stream #{@id}"
           @client.send_object :close, @id
         end
       end
