@@ -6,7 +6,7 @@ A clone of proxylocal. Both client and server are included.
 
 ## The client
 
-    envoy [--key KEY] [--host HOST] [--tls] [--server SERVER] [--log FILE] [[ADDRESS:]PORT] 
+    envoy [-k KEY] [-h HOST] [-s SERVER] [-l LABEL]
 
 Makes the HTTP* service running at ADDRESS:PORT available via a proxylocal
 service running on SERVER. The default server is p45.eu, and the default address
@@ -21,7 +21,7 @@ each client must present the KEY.
 
 ## The server
 
-    envoyd [--key KEY] [--listen [HOST:]PORT] ZONE 
+    envoyd [-k KEY] [-l [HOST:]PORT]] ZONE 
 
 Starts a proxylocal-compatible server. Listens for HTTP requests on the
 specified host and port, which default to 0.0.0.0 and 8080.
