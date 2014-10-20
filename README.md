@@ -6,7 +6,7 @@ A clone of proxylocal. Both client and server are included.
 
 ## The client
 
-    envoy [-k KEY] [-h HOST] [-s SERVER] [-l LABEL]
+    envoy [-k KEY] [-h HOST] [-s SERVER] [-l LABEL] [HOST:]PORT]
 
 Makes the HTTP* service running at ADDRESS:PORT available via a proxylocal
 service running on SERVER. The default server is p45.eu, and the default address
